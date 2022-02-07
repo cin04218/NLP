@@ -1,0 +1,43 @@
+import requests
+from bs4 import BeautifulSoup
+
+#네이버 뉴스
+url = "https://n.news.naver.com/article/584/0000017704?cds=news_media_pc"
+
+def get_naver_news(url): #네이버뉴스 데이터수집 함수 생성
+    h = {'user-agent' : 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'} #오류가 나지 않게 서버에서 인증을 받는 과정
+
+    res = requests.get(url, headers = h)
+    res #200이 나와야함(503이 나오면 오류, 브라우저를 통해서 요청)
+
+    bs = BeautifulSoup(res.content, 'html.parser')
+
+    gija = bs.select('em.media_end_head_journalist_name')[0].text #리스트에서 텍스트만 뽑는 방식
+    time = bs.select('div.media_end_head_info_datestamp_bunch span')[0]['data-date-time']
+    media = bs.select('div.media_end_head_top a img')[0]['title']
+    contents = bs.select('div#dic_area')[0].get_text().replace('\n', '').replace('\t', '')
+    
+    return (gija, time, media, contents)
+
+#네이버 블로그
+url = "https://n.news.naver.com/article/584/0000017704?cds=news_media_pc"
+get_naver_news(url) #데이터수집 함수 호출
+
+url2 = 'https://blog.naver.com/cin04218'
+
+def get_naver_blog(url2): #네이버블로그 데이터수집 함수 생성
+    res2 = requests.get(url2)
+    bs2 = BeautifulSoup(res2.content, 'html.parser')
+
+    new_url = 'https://blog.naver.com' + bs2.select('iframe')[0]['src']
+    new_res = requests.get(new_url)
+    new_bs = BeautifulSoup(new_res.content, 'html.parser')
+
+    date = new_bs.select('span.se_publishDate')[0].text
+    title = new_bs.select('div.se-title-text p span')[0].text
+    contents2 = new_bs.select('div.se-main-container')[0].get_text().replace('\n', '').replace('\t', '')
+    
+    return (date, title, contents2)
+    
+n_url = 'https://blog.naver.com/cin04218'
+get_naver_blog(n_url) #데이터수집 함수 호출
